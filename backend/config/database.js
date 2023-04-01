@@ -4,9 +4,10 @@ const connectdatabase =()=>{mongoose.connect(process.env.DB_URI,{useNewUrlParser
     
         console.log();
         
-        }).catch((err)=>{
-                console.log(err);
         });
+        // .catch((err)=>{       
+        //         console.log(err);
+        // });
 }
 
 module.exports = connectdatabase
