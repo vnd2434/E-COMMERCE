@@ -1,6 +1,7 @@
 const Product = require('../models/productModel')
 const ErrorHendler = require("../Utils/errorHandler")
 const catchAsyncError = require("../middleware/catchAsyncError")
+const ApiFeatures = require("../Utils/apifeatures")
 
 
 // create Product  -- Admin
@@ -16,13 +17,19 @@ exports.createProduct =catchAsyncError(async (req, res, next) => {
 
 // GET ALL PRODUCT 
 exports.getAllproducts =catchAsyncError( async (req, res, next) => {
+  
+    const resultPerPage = 5 ;
+    const productCount = await Product.countDocuments()   //frontend mathi data leva mate 
 
-    const prodata = await Product.find()
+  const apiFeature = new  ApiFeatures(Product.find(),req.query).search().filter().pagination(resultPerPage);
+
+    const prodata = await apiFeature.query;
 
 
     res.status(200).json({
         success: true,
-        prodata
+        prodata,
+        productCount
     })
 
 })
