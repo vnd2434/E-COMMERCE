@@ -5,7 +5,7 @@ const User = require('../models/userModel')
 
 // REGISTER MODEL 
 exports.regiterUser = catchAsyncError(async (req,res,next) =>{
-    
+
     const{name ,email,password}=req.body;
 
     const userdata= await User.create({
@@ -17,8 +17,12 @@ exports.regiterUser = catchAsyncError(async (req,res,next) =>{
         }
     });
     
-    res.status(200).json({
+    const token = await userdata.getJWTToken();
+
+    res.status(201).json({
         succcess:true,
-        userdata
+        token
     })
 })
+
+// Login User 

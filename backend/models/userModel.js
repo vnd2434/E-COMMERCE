@@ -1,34 +1,39 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 var bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
     name:{
         type:String,
-        requried:[true ,  'please Entert your name '],
-        maxLength:[30 , 'Name cannot Exceed 30 Cherectors'],        
-        minLength:[4 , 'Name should Have More Then 4 cherectors'],
+        required:[true , "please Entert your Name "],
+        maxLength:[30 , "Name cannot Exceed 30 Cherectors"],        
+        minLength:[4 , "Name should Have More Then 4 cherectors"],
     },
     email:{
         type:String,
-        requried:[true,'Please Entert Your Email'],
+        required:[true,"Please Entert Your Email"],
         unique:true,
-        validator:[validator.isEmail, 'please Enter Valid Email']
+       validate(value){
+        if(!validator.isEmail(value)){
+            throw new Error("Please Enter Valid Email");
+        }
+       }
     },
     password:{
         type:String,
-        requried:[true, 'Please Entert Your Email'],
+        required:[true, 'Please Entert Your Email'],
         minLength:[8 , 'password should be greterthen 8 cheractors'],
         select:false,
     },
     avatar:{
         public_id :{
             type:String,
-            requried:true
+            required:true
         },
         url:{
             type:String,
-            requried:true
+            required:true
         }
        },
     role:{
@@ -41,14 +46,23 @@ const userSchema = new mongoose.Schema({
     
 });
 
+// Bcrypt PassWord
 userSchema.pre("save" ,async function(next){
     if(!this.isModified("password")){
         next();
     }
 
     this.password = await bcrypt.hash(this.password , 10)
-})
+});
 
+// JWT TOKEN
+
+userSchema.methods.getJWTToken = async function() {
+    return jwt.sign({_id:this._id},process.env.JWT_SECRET,{
+
+        expiresIn:process.env.JWT_EXPIRE
+    })
+}
 
 const userModel= mongoose.model('User' , userSchema);
 

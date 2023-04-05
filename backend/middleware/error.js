@@ -7,12 +7,12 @@ module.exports= (err , req ,res , next)=>{
     // wrong mongodb id error 
     if(err.name === "CastError"){
         const message = `Reshource is not found.Invalid:${err.path}`;
-     Error = new ErrorHendler(message,400)   
+        err = new ErrorHendler(message,400)   
     }
 
     res.status(err.statusCode).json({
         success:false,
-        message: Error.message,
+        message: err.message,
         
     })
 }
