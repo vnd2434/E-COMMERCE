@@ -5,10 +5,14 @@ const { getAllproducts,
         updateProducts, 
         deleteProduct} = require('../controllers/productController');
 
+const { isAtheticatedUser } = require('../middleware/auth');
+
 const router= express.Router();
 
 // Get All Product 
-router.route('/products').get(getAllproducts);
+
+router.route('/products').get(isAtheticatedUser , getAllproducts)
+
 
 // create Product 
 router.route('/products/new').post(createProduct);

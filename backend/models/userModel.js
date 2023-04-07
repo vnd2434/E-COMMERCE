@@ -57,12 +57,22 @@ userSchema.pre("save" ,async function(next){
 
 // JWT TOKEN
 
-userSchema.methods.getJWTToken = async function() {
-    return jwt.sign({_id:this._id},process.env.JWT_SECRET,{
+userSchema.methods.getJWTToken =  function() {
+
+    return  jwt.sign({_id:this._id},process.env.JWT_SECRET,{
 
         expiresIn:process.env.JWT_EXPIRE
     })
 }
+
+// Compare Password 
+
+userSchema.methods.comparePassword= async  function(enteredPassword){
+
+  return  bcrypt.compare(enteredPassword , this.password)
+}
+
+
 
 const userModel= mongoose.model('User' , userSchema);
 
