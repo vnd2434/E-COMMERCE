@@ -5,6 +5,7 @@ const errorMiddleware = require("./middleware/error")
 const  cookieParser = require('cookie-parser')
 
 app.use(express.json())
+
 app.use(cookieParser())
 
 // imports Route
@@ -17,5 +18,5 @@ app.use('/api/v1',user)
 // Middleware Fort Error
 app.use(errorMiddleware)
 
-
+                
 module.exports = app

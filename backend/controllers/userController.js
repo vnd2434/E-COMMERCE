@@ -10,7 +10,7 @@ exports.regiterUser = catchAsyncError(async (req,res,next) =>{
     const{name ,email,password}=req.body;
 
     const userdata= await User.create({
-
+        
         name, email,password,
         avatar:{
             public_id:'sample ',

@@ -36,10 +36,14 @@ const userSchema = new mongoose.Schema({
             required:true
         }
        },
-    role:{
-        type:String,
-        default:"user",
-    },
+
+
+       role:{
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+      },
+    
 
     resetPasswordToken:String,
     resetPasswordExpire:Date,
@@ -59,11 +63,11 @@ userSchema.pre("save" ,async function(next){
 
 userSchema.methods.getJWTToken =  function() {
 
-    return  jwt.sign({_id:this._id},process.env.JWT_SECRET,{
+    return  jwt.sign({id :this._id},process.env.JWT_SECRET,{
 
         expiresIn:process.env.JWT_EXPIRE
-    })
-}
+    });
+};
 
 // Compare Password 
 
@@ -75,5 +79,7 @@ userSchema.methods.comparePassword= async  function(enteredPassword){
 
 
 const userModel= mongoose.model('User' , userSchema);
+
+
 
 module.exports = userModel;
