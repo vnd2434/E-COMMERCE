@@ -36,7 +36,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     if (!email || !password) {
         return next(new ErrorHendler("Please Enter Email and Password", 400))
     }
-   
+
 
     const userdata = await User.findOne({ email }).select("+password");
 
@@ -77,10 +77,10 @@ exports.logOut = catchAsyncError(async (req, res, next) => {
 
 // Forgot Password
 
-exports.forgatePassword =  catchAsyncError(async (req, res, next) => {
+exports.forgatePassword = catchAsyncError(async (req, res, next) => {
 
 
-    const userdata = await User.findOne({email:req.body.email});
+    const userdata = await User.findOne({ email: req.body.email });
 
 
     if (!userdata) {
@@ -131,23 +131,24 @@ exports.forgatePassword =  catchAsyncError(async (req, res, next) => {
 
 
 // RESET PASSWORD 
-exports.resetPassword = catchAsyncError(async(req , res , next)=>{
+exports.resetPassword = catchAsyncError(async (req, res, next) => {
     // creating Token
     const resetPasswordToken = crypto.createHash("sha256").update(req.param.token).digest("hex");
 
     const userdata = await User.findOne({
         resetPasswordToken,
-        resetPasswordExpire:{$gt:Date.now()
+        resetPasswordExpire: {
+            $gt: Date.now()
         }
     })
     // cannot find User
-    if(!userdata){
-        return next(new ErrorHendler("Reset password Token is Invalid or has been Expired",400))
+    if (!userdata) {
+        return next(new ErrorHendler("Reset password Token is Invalid or has been Expired", 400))
     }
 
     // find User and passwod nd confrim passwod not same 
-    if(req.body.password !== req.body.confrimPassword){
-        return next(new ErrorHendler("Password dose not password",400))
+    if (req.body.password !== req.body.confrimPassword) {
+        return next(new ErrorHendler("Password dose not password", 400))
     }
 
     // Password is metch so 
@@ -156,7 +157,136 @@ exports.resetPassword = catchAsyncError(async(req , res , next)=>{
     userdata.resetPasswordToken = undefined;
     userdata.resetPasswordExpire = undefined;
 
-    sendToken(userdata , 200 ,res)
+    sendToken(userdata, 200, res)
 
 });
+
+
+//  Get User Details   
+exports.getUserDetails = catchAsyncError(async (req, res, next) => {
+
+    const userdata = await User.findById(req.userdata.id);
+
+    res.status(200).json({
+        success: true,
+        userdata
+    })
+})
+
+
+//  Update User Password   --not working
+exports.updatePassword = catchAsyncError(async (req, res, next) => {
+
+    const userdata = await User.findById(req.userdata.id).select("+password")
+
+    const isPasswordMatched = await userdata.comparePassword(req.body.oldPassword)
+
+    if (!isPasswordMatched) {
+        return next(new ErrorHendler("old password is not correct", 400));
+    }
+
+
+    if (req.body.newPassword !== req.body.confrimPassword) {
+        return next(new ErrorHendler("Please dose not Metch", 400));
+    }
+
+    userdata.password = req.body.newPassword;
+
+    await userdata.save();
+
+    sendToken(userdata, 200, res)
+
+});
+
+// Update User Profile 
+
+exports.updateProfile = catchAsyncError(async (req, res, next) => {
+    const newUserdata = {
+        name: req.body.name,
+        email: req.body.email
+    }
+    // we will cloudinery later
+
+    const userdata = await User.findByIdAndUpdate(req.userdata.id, newUserdata, {
+        new: true,
+        validateBeforeSave: true,
+
+    });
+
+    res.status(200).json({
+        success: true,
+
+    })
+
+})
+
+
+
+// Get All User --Admin
+
+exports.getAllUser = catchAsyncError(async (req, res, next) => {
+
+    const users = await User.find();
+
+    res.status(200).json({
+        success: true,
+        users
+    })
+})
+
+// GetSingleUser --admin
+exports.getSingleUser = catchAsyncError(async (req, res, next) => {
+
+    const userdata = await User.findById(req.params.id);
+
+    res.status(200).json({
+        success: true,
+        userdata
+    })
+});
+
+// Get Update User Role --Admin
+
+exports.updateUserRole = catchAsyncError(async (req, res, next) => {
+
+    const newUserdata = {
+        name: req.body.name,
+        email: req.body.email,
+        role: req.body.role
+    }
+
+    const userdata = await User.findByIdAndUpdate(req.params.id, newUserdata, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+    });
+
+    res.status(200).json({
+        success: true,
+        userdata
+    })
+
+});
+
+
+
+//Delete User    --admin
+
+exports.deleteUser = catchAsyncError (async (req,res,next)=>{
+    
+    const userdata = await User.findById(req.params.id) ;
+    
+    //  we will remove cloudinery later
+
+    if(!userdata){
+        return next(new ErrorHendler("User is Not Found ",400));
+    }
+
+     await User.deleteOne();
+
+    res.status(200).json({
+        success:true,
+        message: "user is Deleted"
+    })
+})
 
