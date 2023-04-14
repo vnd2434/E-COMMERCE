@@ -90,5 +90,99 @@ exports.deleteProduct =catchAsyncError(async (req, res, next) => {
 })
 
 
-// Limit And Skip
+// Create New Review or Update The REview
+
+exports.createProductReview = catchAsyncError (async(req,res,next)=>{
+    const {rating,Comment,productId} = req.body;
+
+    const review = {
+        userdata : req.userdata._id,
+        name : req.userdata.name,
+        rating : Number(rating),
+        Comment,
+    };
+
+    const prodata = await Product.findById(productId)
+
+    const isReviewed = prodata.reviews.find((rev) => rev.userdata.toString() === req.userdata._id.toString())
+
+   if(isReviewed){
+        prodata.reviews.forEach (rev =>{
+            if((rev)=> rev.userdata.toString() === req.userdata._id.toString()){
+                (rev.rating = rating),(rev.Comment = Comment)            
+            }
+        })
+
+   }else{
+        prodata.reviews.push(review);
+   }
+
+//    ratting avrage
+
+   let avg = 0;
+
+   prodata.reviews.forEach(rev =>{
+        avg+=rev.rating;
+   });
+
+   prodata.ratings = avg/prodata.reviews.length
+
+   await prodata.save({validateBeforeSave:false}),
+
+   res.status(200).json({
+    success:true,
+   })
+
+});                          
+
+// All Reveiws Of a Singale Product 
+
+exports.getProductReveiws = catchAsyncError(async(req,res,next)=>{
+
+    const prodata = await Product.findById(req.body.id);
+
+    if(!prodata){
+        return next(new ErrorHendler("Product Not Found",400))
+    }   
+
+    res.status(200).json({
+        success:true,
+        reviews:prodata.reviews
+    })
+});
+
+// Delete REviews   ---  baki
+
+exports.deleteReview = catchAsyncError(async(req ,res ,next)=>{
+    const prodata =  await Product.findById(req.body.productId)
+    
+    if(!prodata){
+        return next(new ErrorHendler("Product is Not Found",400))
+    }
+    
+    const reviews = prodata.reviews.filter((rev)=> rev._id.toString() !== req.body.id.toString())
+
+    let avg =0 
+
+    reviews.forEach((rev) =>{
+        avg+=ratings
+    });
+
+    const ratings = avg/reviews.length
+    const numOfReviews = reviews.length
+
+    await prodata.findByIdAndUpdate(req.quary.prodata,{
+            reviews,
+            ratings,
+            numOfReviews,
+    },{
+        new:true,
+        runValidators:true,
+        usefindAndModify:flase
+    });
+
+    res.status(200).json({
+        success:true
+    })
+})
 
